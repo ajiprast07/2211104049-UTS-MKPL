@@ -1,6 +1,7 @@
 package lib;
 
 import java.time.LocalDate;
+import java.time.Period;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -36,9 +37,7 @@ public class Employee {
 	}
 
 	public enum Grade {
-		LEVEL_1(SALARY_GRADE_1),
-		LEVEL_2(SALARY_GRADE_2),
-		LEVEL_3(SALARY_GRADE_3);
+		LEVEL_1(SALARY_GRADE_1), LEVEL_2(SALARY_GRADE_2), LEVEL_3(SALARY_GRADE_3);
 
 		private final int baseSalary;
 
@@ -90,6 +89,7 @@ public class Employee {
 
 		childNames = new LinkedList<>();
 		childIdNumbers = new LinkedList<>();
+		salary = new Salary(0, 0);
 	}
 
 	/**
@@ -98,33 +98,28 @@ public class Employee {
 	 * Jika pegawai adalah warga negara asing gaji bulanan diperbesar sebanyak 50%
 	 */
 	public void setMonthlySalary(Grade grade) {
-		int finalSalary = calculateAdjustedSalary(grade.getBaseSalary());
-		if (salary == null) {
-			salary = new Salary(finalSalary, 0);
-		} else {
-			salary.setMonthlySalary(finalSalary);
-		}
+		int baseSalary = grade.getBaseSalary();
+		salary.setMonthlySalary(adjustSalaryForForeigner(baseSalary));
 	}
 
-	private int calculateAdjustedSalary(int baseSalary) {
-		return isForeigner ? (int) (baseSalary * FOREIGNER_SALARY_MULTIPLIER) : baseSalary;
+	private int adjustSalaryForForeigner(int baseSalary) {
+		if (isForeigner) {
+			return (int) (baseSalary * FOREIGNER_SALARY_MULTIPLIER);
+		}
+		return baseSalary;
 	}
 
 	public void setAnnualDeductible(int deductible) {
-		// Tidak ada duplikasi di sini
+		// Tidak berubah
 	}
 
 	public void setAdditionalIncome(int income) {
-		if (salary == null) {
-			salary = new Salary(0, income);
-		} else {
-			salary.setOtherMonthlyIncome(income);
-		}
+		salary.setOtherMonthlyIncome(income);
 	}
 
 	public void setSpouse(String spouseName, String spouseIdNumber) {
 		this.spouseName = spouseName;
-		this.spouseIdNumber = spouseIdNumber;
+		this.spouseIdNumber = spouseIdNumber; // Diperbaiki dari bug sebelumnya
 	}
 
 	public void addChild(String childName, String childIdNumber) {
@@ -141,17 +136,20 @@ public class Employee {
 			salary.getMonthlySalary(),
 			salary.getOtherMonthlyIncome(),
 			monthWorkingInYear,
-			0,
-			spouseIdNumber.equals(""),
+			0, // Asumsi deductible tetap 0 di sini
+			spouseIdNumber == null || spouseIdNumber.isEmpty(),
 			childIdNumbers.size()
 		);
 	}
 
 	private int calculateMonthsWorkedThisYear() {
-		LocalDate date = LocalDate.now();
-		if (date.getYear() == joinDate.getYear()) {
-			return date.getMonthValue() - joinDate.getMonthValue();
+		LocalDate now = LocalDate.now();
+
+		if (joinDate.getYear() == now.getYear()) {
+			int months = Period.between(joinDate, now).getMonths();
+			return Math.max(1, months); // Minimal dianggap 1 bulan
+		} else {
+			return 12;
 		}
-		return 12;
 	}
 }
