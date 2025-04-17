@@ -26,6 +26,10 @@ public class Employee {
 	private List<String> childNames;
 	private List<String> childIdNumbers;
 
+	// Konstanta untuk grade salaries dan foreigner multiplier
+	private static final int SALARY_GRADE_1 = 3000000;
+	private static final int SALARY_GRADE_2 = 5000000;
+	private static final int SALARY_GRADE_3 = 7000000;
 	private static final double FOREIGNER_SALARY_MULTIPLIER = 1.5;
 
 	// Enum untuk Gender
@@ -35,7 +39,7 @@ public class Employee {
 
 	// Enum untuk Grade
 	public enum Grade {
-		LEVEL_1(3000000), LEVEL_2(5000000), LEVEL_3(7000000);
+		LEVEL_1(SALARY_GRADE_1), LEVEL_2(SALARY_GRADE_2), LEVEL_3(SALARY_GRADE_3);
 
 		private final int baseSalary;
 
