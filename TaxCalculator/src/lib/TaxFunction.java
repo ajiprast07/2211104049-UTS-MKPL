@@ -12,9 +12,9 @@ public class TaxFunction {
     /**
      * Fungsi untuk menghitung jumlah pajak penghasilan pegawai yang harus dibayarkan setahun.
      */
-    public static int calculateTax(int monthlySalary, int otherMonthlyIncome, int numberOfMonthWorking, int deductible, boolean isMarried, int numberOfChildren) {
-        validateInput(numberOfMonthWorking);
-        int taxableIncome = calculateTaxableIncome(monthlySalary, otherMonthlyIncome, numberOfMonthWorking, deductible, isMarried, numberOfChildren);
+    public static int calculateTax(Employee employee) {
+        validateInput(employee.getNumberOfMonthWorking());
+        int taxableIncome = calculateTaxableIncome(employee);
         return calculateFinalTax(taxableIncome);
     }
 
@@ -24,18 +24,18 @@ public class TaxFunction {
         }
     }
 
-    private static int calculateTaxableIncome(int monthlySalary, int otherMonthlyIncome, int numberOfMonthWorking, int deductible, boolean isMarried, int numberOfChildren) {
-        int totalIncome = (monthlySalary + otherMonthlyIncome) * numberOfMonthWorking;
-        int nonTaxableIncome = calculateNonTaxableIncome(isMarried, numberOfChildren);
-        return totalIncome - deductible - nonTaxableIncome;
+    private static int calculateTaxableIncome(Employee employee) {
+        int totalIncome = (employee.getMonthlySalary() + employee.getOtherMonthlyIncome()) * employee.getNumberOfMonthWorking();
+        int nonTaxableIncome = calculateNonTaxableIncome(employee);
+        return totalIncome - employee.getDeductible() - nonTaxableIncome;
     }
 
-    private static int calculateNonTaxableIncome(boolean isMarried, int numberOfChildren) {
+    private static int calculateNonTaxableIncome(Employee employee) {
         int nonTaxableIncome = BASE_PTWP;
-        if (isMarried) {
+        if (employee.isMarried()) {
             nonTaxableIncome += MARRIED_ADDITION;
         }
-        nonTaxableIncome += Math.min(numberOfChildren, MAX_CHILDREN_COUNTED) * CHILD_ADDITION;
+        nonTaxableIncome += Math.min(employee.getNumberOfChildren(), MAX_CHILDREN_COUNTED) * CHILD_ADDITION;
         return nonTaxableIncome;
     }
 
