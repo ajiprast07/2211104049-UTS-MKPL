@@ -9,6 +9,16 @@ public class Employee {
     private int numberOfChildren;
 
     public Employee(int monthlySalary, int otherMonthlyIncome, int numberOfMonthWorking, int deductible, boolean isMarried, int numberOfChildren) {
+        if (monthlySalary < 0 || otherMonthlyIncome < 0 || numberOfMonthWorking < 0 || deductible < 0 || numberOfChildren < 0) {
+            throw new IllegalArgumentException("Input values cannot be negative.");
+        }
+        if (numberOfMonthWorking > 12) {
+            throw new IllegalArgumentException("Number of months working cannot exceed 12.");
+        }
+        if (numberOfChildren > 3) {
+            throw new IllegalArgumentException("Number of children cannot exceed 3.");
+        }
+
         this.monthlySalary = monthlySalary;
         this.otherMonthlyIncome = otherMonthlyIncome;
         this.numberOfMonthWorking = numberOfMonthWorking;
