@@ -13,15 +13,11 @@ public class TaxFunction {
      * Fungsi untuk menghitung jumlah pajak penghasilan pegawai yang harus dibayarkan setahun.
      */
     public static int calculateTax(Employee employee) {
-        validateInput(employee.getNumberOfMonthWorking());
+        if (employee == null) {
+            throw new IllegalArgumentException("Employee cannot be null.");
+        }
         int taxableIncome = calculateTaxableIncome(employee);
         return calculateFinalTax(taxableIncome);
-    }
-
-    private static void validateInput(int numberOfMonthWorking) {
-        if (numberOfMonthWorking > MAX_WORKING_MONTH) {
-            throw new IllegalArgumentException("Working months cannot exceed 12.");
-        }
     }
 
     private static int calculateTaxableIncome(Employee employee) {
@@ -40,6 +36,9 @@ public class TaxFunction {
     }
 
     private static int calculateFinalTax(int taxableIncome) {
+        if (taxableIncome < 0) {
+            return 0;
+        }
         int tax = (int) Math.round(TAX_RATE * taxableIncome);
         return tax < 0 ? 0 : tax;
     }
