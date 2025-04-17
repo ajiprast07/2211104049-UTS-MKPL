@@ -28,11 +28,21 @@ public class TaxFunction {
 
     private static int calculateNonTaxableIncome(Employee employee) {
         int nonTaxableIncome = BASE_PTWP;
-        if (employee.isMarried()) {
-            nonTaxableIncome += MARRIED_ADDITION;
-        }
-        nonTaxableIncome += Math.min(employee.getNumberOfChildren(), MAX_CHILDREN_COUNTED) * CHILD_ADDITION;
+        nonTaxableIncome += calculateMarriedAddition(employee);
+        nonTaxableIncome += calculateChildrenAddition(employee);
         return nonTaxableIncome;
+    }
+
+    private static int calculateMarriedAddition(Employee employee) {
+        if (employee.isMarried()) {
+            return MARRIED_ADDITION;
+        }
+        return 0;
+    }
+
+    private static int calculateChildrenAddition(Employee employee) {
+        int childrenCount = Math.min(employee.getNumberOfChildren(), MAX_CHILDREN_COUNTED);
+        return childrenCount * CHILD_ADDITION;
     }
 
     private static int calculateFinalTax(int taxableIncome) {
