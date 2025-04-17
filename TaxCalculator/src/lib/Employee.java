@@ -1,7 +1,6 @@
 package lib;
 
 import java.time.LocalDate;
-import java.time.Period;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -23,6 +22,8 @@ public class Employee {
 
 	private String spouseName;
 	private String spouseIdNumber;
+
+	private int annualDeductible;
 
 	private List<String> childNames;
 	private List<String> childIdNumbers;
@@ -110,7 +111,7 @@ public class Employee {
 	}
 
 	public void setAnnualDeductible(int deductible) {
-		// Tidak berubah
+		this.annualDeductible = deductible;
 	}
 
 	public void setAdditionalIncome(int income) {
@@ -119,7 +120,7 @@ public class Employee {
 
 	public void setSpouse(String spouseName, String spouseIdNumber) {
 		this.spouseName = spouseName;
-		this.spouseIdNumber = spouseIdNumber; // Diperbaiki dari bug sebelumnya
+		this.spouseIdNumber = spouseIdNumber;
 	}
 
 	public void addChild(String childName, String childIdNumber) {
@@ -128,26 +129,24 @@ public class Employee {
 	}
 
 	public int getAnnualIncomeTax() {
-		//Menghitung berapa lama pegawai bekerja dalam setahun ini, 
-		//jika pegawai sudah bekerja dari tahun sebelumnya maka otomatis dianggap 12 bulan.
 		monthWorkingInYear = calculateMonthsWorkedThisYear();
 
-		return TaxFunction.calculateTax(
+		TaxPayerProfile profile = new TaxPayerProfile(
 			salary.getMonthlySalary(),
 			salary.getOtherMonthlyIncome(),
 			monthWorkingInYear,
-			0, // Asumsi deductible tetap 0 di sini
-			spouseIdNumber == null || spouseIdNumber.isEmpty(),
+			annualDeductible,
+			spouseIdNumber.equals(""),
 			childIdNumbers.size()
 		);
+
+		return TaxFunction.calculateTax(profile);
 	}
 
 	private int calculateMonthsWorkedThisYear() {
-		LocalDate now = LocalDate.now();
-
-		if (joinDate.getYear() == now.getYear()) {
-			int months = Period.between(joinDate, now).getMonths();
-			return Math.max(1, months); // Minimal dianggap 1 bulan
+		LocalDate date = LocalDate.now();
+		if (date.getYear() == joinDate.getYear()) {
+			return date.getMonthValue() - joinDate.getMonthValue();
 		} else {
 			return 12;
 		}
