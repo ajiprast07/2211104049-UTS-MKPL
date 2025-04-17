@@ -40,10 +40,5 @@ public class TaxFunction {
 		}
 			 
 	}
-
-	public static int calculateTax(TaxPayerProfile profile) {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Unimplemented method 'calculateTax'");
-	}
 	
 }

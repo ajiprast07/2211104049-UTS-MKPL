@@ -7,107 +7,52 @@ import java.util.List;
 public class Employee {
 
 	private String employeeId;
-	private String firstName;
-	private String lastName;
+	private Name name;
 	private String idNumber;
 	private String address;
-
-	private LocalDate joinDate;
-	private int monthWorkingInYear;
-
+	private JoinDate joinDate;
 	private boolean isForeigner;
-	private Gender gender;
+	private boolean gender; // true = Laki-laki, false = Perempuan
 
-	private Salary salary;
-
-	private String spouseName;
-	private String spouseIdNumber;
-
+	private int monthlySalary;
+	private int otherMonthlyIncome;
 	private int annualDeductible;
+
+	private Spouse spouse;
 
 	private List<String> childNames;
 	private List<String> childIdNumbers;
 
-	private static final int SALARY_GRADE_1 = 3000000;
-	private static final int SALARY_GRADE_2 = 5000000;
-	private static final int SALARY_GRADE_3 = 7000000;
-	private static final double FOREIGNER_SALARY_MULTIPLIER = 1.5;
-
-	public enum Gender {
-		MALE, FEMALE
-	}
-
-	public enum Grade {
-		LEVEL_1(SALARY_GRADE_1), LEVEL_2(SALARY_GRADE_2), LEVEL_3(SALARY_GRADE_3);
-
-		private final int baseSalary;
-
-		Grade(int baseSalary) {
-			this.baseSalary = baseSalary;
-		}
-
-		public int getBaseSalary() {
-			return baseSalary;
-		}
-	}
-
-	public static class Salary {
-		private int monthlySalary;
-		private int otherMonthlyIncome;
-
-		public Salary(int monthlySalary, int otherMonthlyIncome) {
-			this.monthlySalary = monthlySalary;
-			this.otherMonthlyIncome = otherMonthlyIncome;
-		}
-
-		public int getMonthlySalary() {
-			return monthlySalary;
-		}
-
-		public int getOtherMonthlyIncome() {
-			return otherMonthlyIncome;
-		}
-
-		public void setMonthlySalary(int monthlySalary) {
-			this.monthlySalary = monthlySalary;
-		}
-
-		public void setOtherMonthlyIncome(int otherMonthlyIncome) {
-			this.otherMonthlyIncome = otherMonthlyIncome;
-		}
-	}
-
-	public Employee(String employeeId, String firstName, String lastName, String idNumber, String address,
-	                LocalDate joinDate, boolean isForeigner, Gender gender) {
+	public Employee(String employeeId, String firstName, String lastName, String idNumber, String address, int yearJoined, int monthJoined, int dayJoined, boolean isForeigner, boolean gender) {
 		this.employeeId = employeeId;
-		this.firstName = firstName;
-		this.lastName = lastName;
+		this.name = new Name(firstName, lastName);
 		this.idNumber = idNumber;
 		this.address = address;
-		this.joinDate = joinDate;
+		this.joinDate = new JoinDate(yearJoined, monthJoined, dayJoined);
 		this.isForeigner = isForeigner;
 		this.gender = gender;
 
 		childNames = new LinkedList<>();
 		childIdNumbers = new LinkedList<>();
-		salary = new Salary(0, 0);
 	}
 
-	/**
-	 * Fungsi untuk menentukan gaji bulanan pegawai berdasarkan grade kepegawaiannya 
-	 * (grade 1: 3.000.000 per bulan, grade 2: 5.000.000 per bulan, grade 3: 7.000.000 per bulan)
-	 * Jika pegawai adalah warga negara asing gaji bulanan diperbesar sebanyak 50%
-	 */
-	public void setMonthlySalary(Grade grade) {
-		int baseSalary = grade.getBaseSalary();
-		salary.setMonthlySalary(adjustSalaryForForeigner(baseSalary));
-	}
-
-	private int adjustSalaryForForeigner(int baseSalary) {
-		if (isForeigner) {
-			return (int) (baseSalary * FOREIGNER_SALARY_MULTIPLIER);
+	public void setMonthlySalary(int grade) {
+		int baseSalary;
+		switch (grade) {
+			case 1:
+				baseSalary = 3000000;
+				break;
+			case 2:
+				baseSalary = 5000000;
+				break;
+			case 3:
+				baseSalary = 7000000;
+				break;
+			default:
+				baseSalary = 0;
 		}
-		return baseSalary;
+
+		monthlySalary = isForeigner ? (int) (baseSalary * 1.5) : baseSalary;
 	}
 
 	public void setAnnualDeductible(int deductible) {
@@ -115,12 +60,11 @@ public class Employee {
 	}
 
 	public void setAdditionalIncome(int income) {
-		salary.setOtherMonthlyIncome(income);
+		this.otherMonthlyIncome = income;
 	}
 
 	public void setSpouse(String spouseName, String spouseIdNumber) {
-		this.spouseName = spouseName;
-		this.spouseIdNumber = spouseIdNumber;
+		this.spouse = new Spouse(spouseName, spouseIdNumber);
 	}
 
 	public void addChild(String childName, String childIdNumber) {
@@ -129,26 +73,53 @@ public class Employee {
 	}
 
 	public int getAnnualIncomeTax() {
-		monthWorkingInYear = calculateMonthsWorkedThisYear();
+		int monthWorkingInYear;
+		LocalDate currentDate = LocalDate.now();
+		if (currentDate.getYear() == joinDate.year) {
+			monthWorkingInYear = currentDate.getMonthValue() - joinDate.month;
+		} else {
+			monthWorkingInYear = 12;
+		}
 
-		TaxPayerProfile profile = new TaxPayerProfile(
-			salary.getMonthlySalary(),
-			salary.getOtherMonthlyIncome(),
-			monthWorkingInYear,
-			annualDeductible,
-			spouseIdNumber.equals(""),
-			childIdNumbers.size()
-		);
+		boolean hasSpouse = (spouse == null || spouse.getIdNumber().isEmpty());
 
-		return TaxFunction.calculateTax(profile);
+		return TaxFunction.calculateTax(monthlySalary, otherMonthlyIncome, monthWorkingInYear, annualDeductible, hasSpouse, childIdNumbers.size());
+	}
+}
+
+// Kelas tambahan hasil ekstraksi Data Clumps
+class Name {
+	private String firstName;
+	private String lastName;
+
+	public Name(String firstName, String lastName) {
+		this.firstName = firstName;
+		this.lastName = lastName;
+	}
+}
+
+class JoinDate {
+	int year;
+	int month;
+	int day;
+
+	public JoinDate(int year, int month, int day) {
+		this.year = year;
+		this.month = month;
+		this.day = day;
+	}
+}
+
+class Spouse {
+	private String name;
+	private String idNumber;
+
+	public Spouse(String name, String idNumber) {
+		this.name = name;
+		this.idNumber = idNumber;
 	}
 
-	private int calculateMonthsWorkedThisYear() {
-		LocalDate date = LocalDate.now();
-		if (date.getYear() == joinDate.getYear()) {
-			return date.getMonthValue() - joinDate.getMonthValue();
-		} else {
-			return 12;
-		}
+	public String getIdNumber() {
+		return idNumber;
 	}
 }
